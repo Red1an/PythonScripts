@@ -65,9 +65,9 @@
 	}
 
 	// GOST 7.32-2019, clause 6.2.1
-	show heading: it => pagebreak(weak: true) + it
+	// show heading: it => pagebreak(weak: true) + it
     // эт без авто перевода на новую страницу 
-   // show heading: it => v(weak: true, 2em) + it
+   show heading: it => v(weak: true, 2em) + it
 
 	// GOST 7.32-2019, clause 6.2.4
 	show heading: set text(size: fontsize, hyphenate: false)
@@ -91,7 +91,7 @@
 	}
 
 	// GOST 7.32-2017, clause 6.5.7 and 6.6.3
-	set figure.caption(separator: [ --- ])
+	set figure.caption(separator: [ – ])
 
 	// GOST 7.32-2017, clause 6.5.8
 	show figure.caption: set par(leading: 1em)
@@ -110,8 +110,14 @@
 	}
 
 	// GOST 7.32-2017, clause 6.5.1
-	// Display listings as images, except they are breakable
-	show figure.where(kind: raw): set figure(kind: image, supplement: [Рисунок])
+	// Display listings with caption on top
+	show figure.where(kind: raw): it => {
+		v(weak: true, lineheight + leading)
+		it
+	}
+	show figure.where(kind: raw): set figure(supplement: [Листинг])
+	show figure.where(kind: raw): set figure.caption(position: top)
+	show figure.caption.where(kind: raw): align.with(left)
 	show figure.where(kind: raw): set block(width: 100%, breakable: true)
 
 	// GOST 7.32-2017, clause 6.6.3

@@ -10,7 +10,7 @@
   city: "Санкт-Петербург"
 ) = [
   #set align(center)
-  #set block(above: 20pt)
+  #set block(above: 12pt)
 
   #let inline(body) = box(baseline: 12pt)[#body]
   #let undertitle(title, width: auto, body) = {
@@ -57,7 +57,7 @@
       stack(
           dir: ttb,
           spacing: 6pt,
-          text(12pt)[.],
+          text(12pt)[ㅤ],
           line(length: 100%, stroke: 0.5pt),
           text(10pt)[подпись, дата]
         ),
@@ -108,7 +108,7 @@
     stack(
           dir: ttb,
           spacing: 6pt,
-          text(12pt)[.],
+          text(12pt)[ㅤ],
           line(length: 100%, stroke: 0.5pt),
           text(10pt)[подпись, дата]
       ),
