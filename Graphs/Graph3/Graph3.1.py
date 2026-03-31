@@ -3,21 +3,21 @@ import time
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('Agg')  # без GUI
+matplotlib.use('Agg')
 
-VERTICES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+VERTICES = ['Metis', 'European', 'Negroid', 'Mongoloid',
+            'Quadroon', 'Mulatto', 'Sambo']
 N = len(VERTICES)
 
-# 1. МАТРИЦА СМЕЖНОСТИ
+# 1. Матрица смежности
 ADJ_MATRIX = [
-#    Mon Tue Wed Thu Fri Sat Sun
-    [ 0,  3,  0,  2,  0,  0,  0],
-    [ 0,  0,  6,  0,  0,  2,  0],
-    [ 0,  0,  0,  8,  0,  0,  0],
-    [ 0,  0,  0,  0,  0,  0,  0],
-    [ 0,  0,  7,  0,  0,  0,  0],
-    [ 0,  0,  0,  0,  3,  0,  5],
-    [ 1,  4,  0,  0,  0,  0,  0],
+    [ 0,   0,   0,   0,   0,   0,   0],  # Metis
+    [ 1,   0,   0,   0,   2,   1,   0],  # European
+    [ 0,   0,   0,   0,   0,   2,   1],  # Negroid
+    [ 2,   0,   0,   0,   0,   0,   2],  # Mongoloid
+    [ 0,   0,   0,   0,   0,   0,   0],  # Quadroon
+    [ 0,   0,   0,   0,   1,   0,   0],  # Mulatto
+    [ 0,   0,   0,   0,   0,   0,   0],  # Sambo
 ]
 
 EDGES = [
@@ -27,17 +27,15 @@ EDGES = [
 ]
 
 def print_adjacency_matrix(matrix, vertices):
-    print("\n   МАТРИЦА СМЕЖНОСТИ   ")
-    header = f"{'':>6}" + "".join(f"{v:>6}" for v in vertices)
+    header = f"{'':>11}" + "".join(f"{v:>10}" for v in vertices)
     print(header)
     for i, row in enumerate(matrix):
-        line = f"{vertices[i]:>6}" + "".join(f"{val:>6}" for val in row)
+        line = f"{vertices[i]:>11}" + "".join(f"{val:>10}" for val in row)
         print(line)
 
 print_adjacency_matrix(ADJ_MATRIX, VERTICES)
 
-
-# 2. СПИСОК РЁБЕР (edge list)
+# 2. Список рёбер
 def build_edge_list(matrix, vertices):
     edge_list = []
     n = len(matrix)
@@ -50,22 +48,18 @@ def build_edge_list(matrix, vertices):
 EDGE_LIST = build_edge_list(ADJ_MATRIX, VERTICES)
 
 def print_edge_list(edge_list):
-    print("\n    СПИСОК РЁБЕР    ")
-    print(f"{'От':<8} {'До':<8} {'Вес':>5}")
+    print(f"{'От':<12} {'До':<12} {'Вес':>5}")
     for u, v, w in edge_list:
-        print(f"{u:<8} {v:<8} {w:>5}")
+        print(f"{u:<12} {v:<12} {w:>5}")
 
 print_edge_list(EDGE_LIST)
 
-# 3. МАССИВ ЗАПИСЕЙ
+# 3. Массив записей
 def build_records(matrix, vertices):
     n = len(vertices)
     records = []
     for i in range(n):
-        parents = []
-        children = []
-        in_weights = []
-        out_weights = []
+        parents, children, in_weights, out_weights = [], [], [], []
         for j in range(n):
             if matrix[j][i] != 0:
                 parents.append(vertices[j])
@@ -74,11 +68,11 @@ def build_records(matrix, vertices):
                 children.append(vertices[j])
                 out_weights.append(matrix[i][j])
         records.append({
-            'index': i,
-            'name': vertices[i],
-            'parents': parents,
-            'children': children,
-            'in_weights': in_weights,
+            'index':       i,
+            'name':        vertices[i],
+            'parents':     parents,
+            'children':    children,
+            'in_weights':  in_weights,
             'out_weights': out_weights,
         })
     return records
@@ -86,9 +80,8 @@ def build_records(matrix, vertices):
 RECORDS = build_records(ADJ_MATRIX, VERTICES)
 
 def print_records(records):
-    print("\n    МАССИВ ЗАПИСЕЙ    ")
     for r in records:
-        print(f"\n  Индекс : {r['index']},  Имя    : {r['name']}")
+        print(f"\n  Индекс : {r['index']}, Имя    : {r['name']}")
         parents_str = ', '.join(
             f"{p}({w})" for p, w in zip(r['parents'], r['in_weights'])
         ) or '—'
@@ -100,24 +93,23 @@ def print_records(records):
 
 print_records(RECORDS)
 
-# 4. ВИЗУАЛИЗАЦИЯ ГРАФА
-def visualize_graph(vertices, edges, filename="graph_variant3.png"):
+# 4. Визуализация графа
+def visualize_graph(vertices, edges, filename="graph_variant20.png"):
     DG = nx.DiGraph()
     DG.add_nodes_from(range(len(vertices)))
     labels = {i: v for i, v in enumerate(vertices)}
     for i, j, w in edges:
         DG.add_edge(i, j, weight=w)
-
     pos = nx.shell_layout(DG)
+    pos = nx.spring_layout(DG, weight='weight', seed=42, k=5.0)
     edge_labels = {(i, j): w for i, j, w in edges}
-
-    plt.figure(figsize=(9, 7))
-    nx.draw_networkx_nodes(DG, pos, node_size=1800, node_color='white',
+    plt.figure(figsize=(10, 7))
+    nx.draw_networkx_nodes(DG, pos, node_size=2200, node_color='white',
                            edgecolors='black', linewidths=1.5)
-    nx.draw_networkx_labels(DG, pos, labels, font_size=11)
+    nx.draw_networkx_labels(DG, pos, labels, font_size=9)
     nx.draw_networkx_edges(DG, pos, arrows=True, arrowsize=20,
                            edge_color='steelblue', width=1.8,
-                           min_source_margin=28, min_target_margin=28)
+                           min_source_margin=30, min_target_margin=30)
     nx.draw_networkx_edge_labels(DG, pos, edge_labels=edge_labels,
                                  font_size=10, font_color='red')
     plt.axis('off')
@@ -127,14 +119,18 @@ def visualize_graph(vertices, edges, filename="graph_variant3.png"):
 
 visualize_graph(VERTICES, EDGES)
 
-# 5. 12 ПОДПРОГРАММ (по 4 для каждого представления)
-# A) МАТРИЦА СМЕЖНОСТИ
+TEST_VERTEX    = 'European'
+TEST_CHAIN_YES = ['European', 'Mulatto', 'Quadroon']
+TEST_CHAIN_NO  = ['Metis', 'Mulatto', 'Sambo']
+THRESHOLD      = 3
+
+# Матрица смежности — подпрограммы
 def matrix_find_neighbors(matrix, vertices, vertex_name):
     idx = vertices.index(vertex_name)
     neighbors = []
     for j in range(len(matrix)):
-        if matrix[idx][j] != 0 or matrix[j][idx] != 0:
-            if vertices[j] != vertex_name and vertices[j] not in neighbors:
+        if (matrix[idx][j] != 0 or matrix[j][idx] != 0) and vertices[j] != vertex_name:
+            if vertices[j] not in neighbors:
                 neighbors.append(vertices[j])
     return neighbors
 
@@ -156,11 +152,17 @@ def matrix_heavy_vertices(matrix, vertices, threshold):
     return result
 
 def matrix_edge_count(matrix):
-    return sum(1 for i in range(len(matrix)) for j in range(len(matrix))
-               if matrix[i][j] != 0)
+    return sum(1 for i in range(len(matrix))
+               for j in range(len(matrix)) if matrix[i][j] != 0)
 
-#  B) СПИСОК РЁБЕР
+print(f"\nМатрица смежности")
+print(f"Соседи '{TEST_VERTEX}': {matrix_find_neighbors(ADJ_MATRIX, VERTICES, TEST_VERTEX)}")
+print(f"{TEST_CHAIN_YES} — цепь? {matrix_is_chain(ADJ_MATRIX, VERTICES, TEST_CHAIN_YES)}")
+print(f"{TEST_CHAIN_NO} — цепь? {matrix_is_chain(ADJ_MATRIX, VERTICES, TEST_CHAIN_NO)}")
+print(f"Вершины с суммой весов > {THRESHOLD}: {matrix_heavy_vertices(ADJ_MATRIX, VERTICES, THRESHOLD)}")
+print(f"Количество рёбер: {matrix_edge_count(ADJ_MATRIX)}")
 
+# Список рёбер — подпрограммы
 def edgelist_find_neighbors(edge_list, vertex_name):
     neighbors = set()
     for u, v, w in edge_list:
@@ -187,8 +189,14 @@ def edgelist_heavy_vertices(edge_list, vertices, threshold):
 def edgelist_edge_count(edge_list):
     return len(edge_list)
 
-# C) МАССИВ ЗАПИСЕЙ
+print(f"\nСписок рёбер")
+print(f"Соседи '{TEST_VERTEX}': {edgelist_find_neighbors(EDGE_LIST, TEST_VERTEX)}")
+print(f"{TEST_CHAIN_YES} — цепь? {edgelist_is_chain(EDGE_LIST, TEST_CHAIN_YES)}")
+print(f"{TEST_CHAIN_NO} — цепь? {edgelist_is_chain(EDGE_LIST, TEST_CHAIN_NO)}")
+print(f"Вершины с суммой весов > {THRESHOLD}: {edgelist_heavy_vertices(EDGE_LIST, VERTICES, THRESHOLD)}")
+print(f"Количество рёбер: {edgelist_edge_count(EDGE_LIST)}")
 
+# Массив записей — подпрограммы
 def records_find_neighbors(records, vertex_name):
     for r in records:
         if r['name'] == vertex_name:
@@ -213,37 +221,14 @@ def records_heavy_vertices(records, threshold):
 def records_edge_count(records):
     return sum(len(r['out_weights']) for r in records)
 
+print(f"\nМассив записей")
+print(f"Соседи '{TEST_VERTEX}': {records_find_neighbors(RECORDS, TEST_VERTEX)}")
+print(f"{TEST_CHAIN_YES} — цепь? {records_is_chain(RECORDS, TEST_CHAIN_YES)}")
+print(f"{TEST_CHAIN_NO} — цепь? {records_is_chain(RECORDS, TEST_CHAIN_NO)}")
+print(f"Вершины с суммой весов > {THRESHOLD}: {records_heavy_vertices(RECORDS, THRESHOLD)}")
+print(f"Количество рёбер: {records_edge_count(RECORDS)}")
 
-# ДЕМОНСТРАЦИЯ ПОДПРОГРАММ
-TEST_VERTEX = 'Tue'
-TEST_CHAIN_YES = ['Sun', 'Mon', 'Tue', 'Wed']
-TEST_CHAIN_NO  = ['Sun', 'Wed', 'Mon']
-THRESHOLD = 10
-
-print("\n РЕЗУЛЬТАТЫ ПОДПРОГРАММ")
-
-print(f"    Матрица смежности    ")
-print(f" 1. Соседи '{TEST_VERTEX}': {matrix_find_neighbors(ADJ_MATRIX, VERTICES, TEST_VERTEX)}")
-print(f" 2.1 {TEST_CHAIN_YES} цепь? {matrix_is_chain(ADJ_MATRIX, VERTICES, TEST_CHAIN_YES)}")
-print(f" 2.2 {TEST_CHAIN_NO} цепь? {matrix_is_chain(ADJ_MATRIX, VERTICES, TEST_CHAIN_NO)}")
-print(f" 3. Вершины с суммой весов > {THRESHOLD}: {matrix_heavy_vertices(ADJ_MATRIX, VERTICES, THRESHOLD)}")
-print(f" 4. Количество рёбер: {matrix_edge_count(ADJ_MATRIX)}")
-
-print(f"\n     Список рёбер    ")
-print(f" 1. Соседи '{TEST_VERTEX}': {edgelist_find_neighbors(EDGE_LIST, TEST_VERTEX)}")
-print(f" 2.1 {TEST_CHAIN_YES} цепь? {edgelist_is_chain(EDGE_LIST, TEST_CHAIN_YES)}")
-print(f" 2.2. {TEST_CHAIN_NO} цепь? {edgelist_is_chain(EDGE_LIST, TEST_CHAIN_NO)}")
-print(f" 3. Вершины с суммой весов > {THRESHOLD}: {edgelist_heavy_vertices(EDGE_LIST, VERTICES, THRESHOLD)}")
-print(f" 4. Количество рёбер: {edgelist_edge_count(EDGE_LIST)}")
-
-print(f"\n     Массив записей    ")
-print(f" 1. Соседи '{TEST_VERTEX}': {records_find_neighbors(RECORDS, TEST_VERTEX)}")
-print(f" 2.1 {TEST_CHAIN_YES} цепь? {records_is_chain(RECORDS, TEST_CHAIN_YES)}")
-print(f" 2.2 {TEST_CHAIN_NO} цепь? {records_is_chain(RECORDS, TEST_CHAIN_NO)}")
-print(f" 3. Вершины с суммой весов > {THRESHOLD}: {records_heavy_vertices(RECORDS, THRESHOLD)}")
-print(f" 4. Количество рёбер: {records_edge_count(RECORDS)}")
-
-# 6. РАЗМЕР В БАЙТАХ
+# 5. Размер объектов в байтах
 def deep_size_matrix(matrix):
     total = sys.getsizeof(matrix)
     for row in matrix:
@@ -271,40 +256,36 @@ def deep_size_records(records):
                     total += sys.getsizeof(item)
     return total
 
-size_matrix   = deep_size_matrix(ADJ_MATRIX)
-size_edgelist = deep_size_edge_list(EDGE_LIST)
-size_records  = deep_size_records(RECORDS)
+print(f"\nРазмер объектов в байтах")
+print(f"Матрица смежности : {deep_size_matrix(ADJ_MATRIX)} байт")
+print(f"Список рёбер      : {deep_size_edge_list(EDGE_LIST)} байт")
+print(f"Массив записей    : {deep_size_records(RECORDS)} байт")
 
-print("\n РАЗМЕР ОБЪЕКТОВ В БАЙТАХ")
-print(f"Матрица смежности : {size_matrix} байт")
-print(f"Список рёбер      : {size_edgelist} байт")
-print(f"Массив записей    : {size_records} байт")
-
-# 7. ЗАМЕР ВРЕМЕНИ (10^5 повторов)
+# 6. Среднее время выполнения подпрограмм
 REPEATS = 100_000
 
 def measure(func, *args):
     start = time.perf_counter()
     for _ in range(REPEATS):
         func(*args)
-    return (time.perf_counter() - start) / REPEATS * 1e6  # мкс
+    return (time.perf_counter() - start) / REPEATS * 1e6
 
-print(f" \n СРЕДНЕЕ ВРЕМЯ ВЫПОЛНЕНИЯ")
 funcs = {
-    "Матрица поиск соседей":    (matrix_find_neighbors, ADJ_MATRIX, VERTICES, TEST_VERTEX),
-    "Матрица определение цепи":          (matrix_is_chain, ADJ_MATRIX, VERTICES, TEST_CHAIN_YES),
-    "Матрица поиск вершин":    (matrix_heavy_vertices, ADJ_MATRIX, VERTICES, THRESHOLD),
-    "Матрица колво ребер":        (matrix_edge_count, ADJ_MATRIX),
-    "Список ребер поиск соседей":  (edgelist_find_neighbors, EDGE_LIST, TEST_VERTEX),
-    "Список ребер определение цепи":        (edgelist_is_chain, EDGE_LIST, TEST_CHAIN_YES),
-    "Список ребер поиск вершин":  (edgelist_heavy_vertices, EDGE_LIST, VERTICES, THRESHOLD),
-    "Список ребер подсчет ребер":      (edgelist_edge_count, EDGE_LIST),
+    "Матрица поиск соседей":          (matrix_find_neighbors, ADJ_MATRIX, VERTICES, TEST_VERTEX),
+    "Матрица определение цепи":       (matrix_is_chain, ADJ_MATRIX, VERTICES, TEST_CHAIN_YES),
+    "Матрица поиск вершин":           (matrix_heavy_vertices, ADJ_MATRIX, VERTICES, THRESHOLD),
+    "Матрица подсчёт рёбер":          (matrix_edge_count, ADJ_MATRIX),
+    "Список рёбер поиск соседей":     (edgelist_find_neighbors, EDGE_LIST, TEST_VERTEX),
+    "Список рёбер определение цепи":  (edgelist_is_chain, EDGE_LIST, TEST_CHAIN_YES),
+    "Список рёбер поиск вершин":      (edgelist_heavy_vertices, EDGE_LIST, VERTICES, THRESHOLD),
+    "Список рёбер подсчёт рёбер":     (edgelist_edge_count, EDGE_LIST),
     "Массив записей поиск соседей":   (records_find_neighbors, RECORDS, TEST_VERTEX),
-    "Массив записей определение цепи":         (records_is_chain, RECORDS, TEST_CHAIN_YES),
-    "Массив записей поиск вершин":   (records_heavy_vertices, RECORDS, THRESHOLD),
-    "Массив записей подсчет ребер":       (records_edge_count, RECORDS),
+    "Массив записей определение цепи":(records_is_chain, RECORDS, TEST_CHAIN_YES),
+    "Массив записей поиск вершин":    (records_heavy_vertices, RECORDS, THRESHOLD),
+    "Массив записей подсчёт рёбер":   (records_edge_count, RECORDS),
 }
 
+print(f"\nСреднее время выполнения (повторов: {REPEATS})")
 for name, args in funcs.items():
     t = measure(args[0], *args[1:])
-    print(f"  {name:<35} {t:>8.4f} мкс")
+    print(f"  {name:<38} {t:>8.4f} мкс")
